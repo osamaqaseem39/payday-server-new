@@ -3,7 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-const databaseConfig = require('./config/database');
+const path = require('path');
+const databaseConfig = require('./src/config/database');
 
 // Load environment variables
 dotenv.config();
@@ -73,7 +74,7 @@ class App {
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
     // Serve static files from public directory
-    this.app.use(express.static('public'));
+    this.app.use(express.static(path.join(__dirname, 'public')));
 
     // Database connection middleware
     this.app.use(async (req, res, next) => {
@@ -85,8 +86,8 @@ class App {
           const connected = await databaseConfig.connect();
           
           if (!connected) {
-            // In production, continue without database for static files
-            if (process.env.NODE_ENV === 'production' && req.path.startsWith('/')) {
+            // In serverless or production, continue without database for static files
+            if ((process.env.NODE_ENV === 'production' || process.env.VERCEL) && req.path.startsWith('/')) {
               return next();
             }
             
@@ -104,8 +105,8 @@ class App {
       } catch (error) {
         console.error('❌ Database middleware error:', error);
         
-        // In production, continue without database for static files
-        if (process.env.NODE_ENV === 'production' && req.path.startsWith('/')) {
+        // In serverless or production, continue without database for static files
+        if ((process.env.NODE_ENV === 'production' || process.env.VERCEL) && req.path.startsWith('/')) {
           return next();
         }
         
@@ -186,14 +187,14 @@ class App {
 
     // Serve index.html for root route
     this.app.get('/', (req, res) => {
-      res.sendFile('index.html', { root: 'public' });
+      res.sendFile('index.html', { root: path.join(__dirname, 'public') });
     });
 
     // API routes
-    this.app.use('/api/auth', require('./routes/auth'));
-    this.app.use('/api/applications', require('./routes/applications'));
-    this.app.use('/api/jobs', require('./routes/jobs'));
-    this.app.use('/api/interview-candidates', require('./routes/interview-candidates'));
+    this.app.use('/api/auth', require('./src/routes/auth'));
+    this.app.use('/api/applications', require('./src/routes/applications'));
+    this.app.use('/api/jobs', require('./src/routes/jobs'));
+    this.app.use('/api/interview-candidates', require('./src/routes/interview-candidates'));
 
     console.log('✅ Routes initialized');
   }
@@ -239,27 +240,31 @@ class App {
       
       if (!dbConnected) {
         console.error('❌ Failed to connect to database');
-        // Don't exit in production, just log the error
-        if (process.env.NODE_ENV === 'production') {
-          console.log('⚠️ Continuing without database connection in production');
+        // Don't exit in production or serverless, just log the error
+        if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+          console.log('⚠️ Continuing without database connection in production/serverless');
         } else {
           process.exit(1);
         }
       }
 
-      // Start server in both development and production
-      this.server = this.app.listen(this.port, () => {
-        console.log(`🚀 Server running on port ${this.port}`);
-        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`🔗 Health check: http://localhost:${this.port}/`);
-        console.log(`📚 API Documentation: http://localhost:${this.port}/api-docs`);
-      });
+      // Start server only if not in serverless environment
+      if (!process.env.VERCEL) {
+        this.server = this.app.listen(this.port, () => {
+          console.log(`🚀 Server running on port ${this.port}`);
+          console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+          console.log(`🔗 Health check: http://localhost:${this.port}/`);
+          console.log(`📚 API Documentation: http://localhost:${this.port}/api-docs`);
+        });
+      } else {
+        console.log('🚀 Serverless environment detected - Express app ready');
+      }
 
       console.log('✅ Application started successfully');
     } catch (error) {
       console.error('❌ Failed to start application:', error);
-      // Don't exit in production, just log the error
-      if (process.env.NODE_ENV !== 'production') {
+      // Don't exit in production or serverless, just log the error
+      if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
         process.exit(1);
       }
     }
@@ -290,14 +295,17 @@ class App {
   }
 }
 
-// Create and start the application
+// Create the application instance
 const app = new App();
 
-// Handle graceful shutdown
+// Handle graceful shutdown 
 process.on('SIGTERM', () => app.shutdown());
 process.on('SIGINT', () => app.shutdown());
 
-// Start the application
-app.start();
+// Start the application if not in serverless environment
+if (!process.env.VERCEL) {
+  app.start();
+}
 
-module.exports = app; 
+// Export the Express app for Vercel
+module.exports = app.app; 
