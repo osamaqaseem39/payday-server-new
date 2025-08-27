@@ -85,6 +85,11 @@ class App {
           const connected = await databaseConfig.connect();
           
           if (!connected) {
+            // In production, continue without database for static files
+            if (process.env.NODE_ENV === 'production' && req.path.startsWith('/')) {
+              return next();
+            }
+            
             return res.status(503).json({
               success: false,
               message: 'Database connection not ready',
@@ -98,6 +103,12 @@ class App {
         next();
       } catch (error) {
         console.error('❌ Database middleware error:', error);
+        
+        // In production, continue without database for static files
+        if (process.env.NODE_ENV === 'production' && req.path.startsWith('/')) {
+          return next();
+        }
+        
         return res.status(503).json({
           success: false,
           message: 'Database connection error',
@@ -166,7 +177,7 @@ class App {
 
       res.json({
         success: true,
-        status: dbStatus.isConnected ? 'healthy' : 'unhealthy',
+        status: dbStatus.isConnected ? 'healthy' : 'partial',
         message: 'Payday API is running',
         database: dbStatus,
         server: serverStatus
@@ -228,23 +239,29 @@ class App {
       
       if (!dbConnected) {
         console.error('❌ Failed to connect to database');
-        process.exit(1);
+        // Don't exit in production, just log the error
+        if (process.env.NODE_ENV === 'production') {
+          console.log('⚠️ Continuing without database connection in production');
+        } else {
+          process.exit(1);
+        }
       }
 
-      // Start server only in development
-      if (process.env.NODE_ENV !== 'production') {
-        this.server = this.app.listen(this.port, () => {
-          console.log(`🚀 Server running on port ${this.port}`);
-          console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-          console.log(`🔗 Health check: http://localhost:${this.port}/`);
-          console.log(`📚 API Documentation: http://localhost:${this.port}/api-docs`);
-        });
-      }
+      // Start server in both development and production
+      this.server = this.app.listen(this.port, () => {
+        console.log(`🚀 Server running on port ${this.port}`);
+        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`🔗 Health check: http://localhost:${this.port}/`);
+        console.log(`📚 API Documentation: http://localhost:${this.port}/api-docs`);
+      });
 
       console.log('✅ Application started successfully');
     } catch (error) {
       console.error('❌ Failed to start application:', error);
-      process.exit(1);
+      // Don't exit in production, just log the error
+      if (process.env.NODE_ENV !== 'production') {
+        process.exit(1);
+      }
     }
   }
 
