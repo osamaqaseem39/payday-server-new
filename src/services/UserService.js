@@ -147,6 +147,21 @@ class UserService {
   }
 
   /**
+   * Delete user
+   */
+  async deleteUser(id) {
+    try {
+      const user = await this.userRepository.deleteById(id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      throw new Error(`Failed to delete user: ${error.message}`);
+    }
+  }
+
+  /**
    * Generate JWT token
    */
   generateToken(user) {
