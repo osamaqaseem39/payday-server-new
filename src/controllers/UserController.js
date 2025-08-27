@@ -154,6 +154,70 @@ class UserController {
       });
     }
   }
+
+  /**
+   * Update user (admin only)
+   */
+  async updateUser(req, res) {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      const user = await this.userService.updateUser(id, updateData);
+
+      res.status(200).json({
+        success: true,
+        message: 'User updated successfully',
+        data: user
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Create new user (admin only)
+   */
+  async createUser(req, res) {
+    try {
+      const userData = req.body;
+      const user = await this.userService.createUser(userData);
+
+      res.status(201).json({
+        success: true,
+        message: 'User created successfully',
+        data: user
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Delete user (admin only)
+   */
+  async deleteUser(req, res) {
+    try {
+      const { id } = req.params;
+      await this.userService.deleteUser(id);
+
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully'
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = UserController; 

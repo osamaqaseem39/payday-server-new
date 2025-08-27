@@ -209,6 +209,7 @@ class App {
     this.app.use('/api/applications', require('./src/routes/applications'));
     this.app.use('/api/jobs', require('./src/routes/jobs'));
     this.app.use('/api/interview-candidates', require('./src/routes/interview-candidates'));
+    this.app.use('/api/admin', require('./src/routes/admin'));
 
     console.log('✅ Routes initialized');
   }
