@@ -1,4 +1,5 @@
 const CareerApplicationRepository = require('../repositories/CareerApplicationRepository');
+const EmailService = require('./EmailService');
 
 /**
  * Career Application Service Class
@@ -8,6 +9,7 @@ const CareerApplicationRepository = require('../repositories/CareerApplicationRe
 class CareerApplicationService {
   constructor() {
     this.applicationRepository = new CareerApplicationRepository();
+    this.emailService = new EmailService();
   }
 
   /**
@@ -16,6 +18,15 @@ class CareerApplicationService {
   async createApplication(applicationData) {
     try {
       const application = await this.applicationRepository.create(applicationData);
+      
+      // Send confirmation email to applicant (non-blocking)
+      this.emailService.sendApplicationConfirmation(application)
+        .catch(error => console.error('Failed to send confirmation email:', error));
+      
+      // Send notification email to HR team (non-blocking)
+      this.emailService.sendHRNotification(application)
+        .catch(error => console.error('Failed to send HR notification:', error));
+      
       return application;
     } catch (error) {
       throw new Error(`Failed to create application: ${error.message}`);
@@ -138,6 +149,17 @@ class CareerApplicationService {
       return applications;
     } catch (error) {
       throw new Error(`Failed to search applications: ${error.message}`);
+    }
+  }
+
+  /**
+   * Test email service
+   */
+  async testEmailService(email) {
+    try {
+      return await this.emailService.sendTestEmail(email);
+    } catch (error) {
+      throw new Error(`Failed to test email service: ${error.message}`);
     }
   }
 }

@@ -229,6 +229,35 @@ class CareerApplicationController {
       });
     }
   }
+
+  /**
+   * Test email service
+   */
+  async testEmailService(req, res) {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email address is required'
+        });
+      }
+
+      const result = await this.applicationService.testEmailService(email);
+      
+      res.status(200).json({
+        success: true,
+        message: 'Test email sent successfully',
+        data: { email, sent: result }
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = CareerApplicationController; 

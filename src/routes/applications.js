@@ -284,4 +284,31 @@ router.put('/:id/status', auth.requireManager, (req, res) => applicationControll
  */
 router.delete('/:id', auth.requireAdmin, (req, res) => applicationController.deleteApplication(req, res));
 
+/**
+ * @swagger
+ * /api/applications/test-email:
+ *   post:
+ *     summary: Test email service
+ *     tags: [Career Applications]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address to send test email to
+ *     responses:
+ *       200:
+ *         description: Test email sent successfully
+ *       400:
+ *         description: Email address required
+ */
+router.post('/test-email', (req, res) => applicationController.testEmailService(req, res));
+
 module.exports = router; 
