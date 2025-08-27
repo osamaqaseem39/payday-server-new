@@ -38,8 +38,11 @@ class DatabaseConfig {
       const mongoURI = process.env.MONGODB_URI;
       
       if (!mongoURI) {
+        console.error('❌ MONGODB_URI environment variable is not set');
         throw new Error('MONGODB_URI environment variable is not set');
       }
+
+      console.log('🔍 MONGODB_URI found:', mongoURI.substring(0, 20) + '...');
 
       // If already connected, return existing connection
       if (mongoose.connection.readyState === 1) {
@@ -56,6 +59,8 @@ class DatabaseConfig {
       console.log('🔗 Connecting to MongoDB...');
       
       const options = this.getConnectionOptions();
+      console.log('🔧 Connection options:', JSON.stringify(options, null, 2));
+      
       await mongoose.connect(mongoURI, options);
       
       this.isConnected = true;
@@ -66,6 +71,7 @@ class DatabaseConfig {
       return true;
     } catch (error) {
       console.error('❌ MongoDB connection failed:', error.message);
+      console.error('❌ Full error:', error);
       this.isConnected = false;
       return false;
     }
