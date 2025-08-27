@@ -15,7 +15,7 @@ class JobController {
   async createJob(req, res) {
     try {
       const jobData = req.body;
-      const userId = req.user.id; // Assuming user is authenticated
+      const userId = req.user.userId; // Get userId from JWT payload
 
       const job = await this.jobService.createJob(jobData, userId);
 
@@ -79,7 +79,7 @@ class JobController {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      const userId = req.user.id;
+      const userId = req.user.userId;
 
       const updatedJob = await this.jobService.updateJob(id, updateData, userId);
 
@@ -104,7 +104,7 @@ class JobController {
   async deleteJob(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.user.id;
+      const userId = req.user.userId;
 
       const result = await this.jobService.deleteJob(id, userId);
 
@@ -128,7 +128,7 @@ class JobController {
   async publishJob(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.user.id;
+      const userId = req.user.userId;
 
       const publishedJob = await this.jobService.publishJob(id, userId);
 
@@ -153,7 +153,7 @@ class JobController {
   async closeJob(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.user.id;
+      const userId = req.user.userId;
 
       const closedJob = await this.jobService.closeJob(id, userId);
 
@@ -314,7 +314,7 @@ class JobController {
    */
   async getJobsByUser(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.user.userId;
       const jobs = await this.jobService.getJobsByUser(userId);
 
       res.status(200).json({
@@ -336,7 +336,7 @@ class JobController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const userId = req.user.id;
+      const userId = req.user.userId;
 
       const updatedJob = await this.jobService.updateJobStatus(id, status, userId);
 
