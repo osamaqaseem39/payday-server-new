@@ -47,6 +47,7 @@ class DatabaseConfig {
       // If already connected, return existing connection
       if (mongoose.connection.readyState === 1) {
         console.log('✅ Already connected to MongoDB');
+        this.isConnected = true;
         return true;
       }
 
