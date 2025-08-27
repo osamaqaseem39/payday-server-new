@@ -21,7 +21,6 @@ class DatabaseConfig {
       socketTimeoutMS: 30000,
       maxPoolSize: 1,
       minPoolSize: 0,
-      bufferMaxEntries: 0,
       bufferCommands: false,
       retryWrites: true,
       w: 'majority',
