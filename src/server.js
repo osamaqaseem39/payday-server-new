@@ -72,6 +72,9 @@ class App {
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+    // Serve static files from public directory
+    this.app.use(express.static('public'));
+
     // Database connection middleware
     this.app.use(async (req, res, next) => {
       try {
@@ -150,8 +153,8 @@ class App {
    * Initialize routes
    */
   initializeRoutes() {
-    // Health check route
-    this.app.get('/', (req, res) => {
+    // Health check route (JSON API)
+    this.app.get('/api/health', (req, res) => {
       const dbStatus = databaseConfig.getStatus();
       const serverStatus = {
         uptime: process.uptime(),
@@ -168,6 +171,11 @@ class App {
         database: dbStatus,
         server: serverStatus
       });
+    });
+
+    // Serve index.html for root route
+    this.app.get('/', (req, res) => {
+      res.sendFile('index.html', { root: 'public' });
     });
 
     // API routes

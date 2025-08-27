@@ -1,0 +1,144 @@
+/* Additional styles for Payday API Server */
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    max-width: 900px;
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.header p {
+    margin: 1rem 0 0 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.content {
+    padding: 2rem;
+}
+
+.status {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.status h2 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.endpoints {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.endpoints h2 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.endpoint {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #007bff;
+    transition: all 0.2s ease;
+}
+
+.endpoint:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+}
+
+.method {
+    font-weight: bold;
+    color: #007bff;
+    display: inline-block;
+    min-width: 60px;
+}
+
+.url {
+    font-family: 'Courier New', monospace;
+    background: #e9ecef;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    color: #495057;
+}
+
+.description {
+    color: #6c757d;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.success {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.error {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.footer {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 2rem;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        margin: 1rem;
+        border-radius: 8px;
+    }
+    
+    .header {
+        padding: 2rem 1rem;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .content {
+        padding: 1rem;
+    }
+    
+    .method {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+} 
