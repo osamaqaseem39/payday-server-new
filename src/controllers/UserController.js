@@ -27,10 +27,13 @@ class UserController {
       const userData = { name, email, password, role };
       const user = await this.userService.createUser(userData);
 
+      // Authenticate the user after registration
+      const result = await this.userService.authenticateUser(email, password);
+
       res.status(201).json({
         success: true,
         message: 'User registered successfully',
-        data: user
+        data: result
       });
     } catch (error) {
       res.status(400).json({

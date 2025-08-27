@@ -35,6 +35,7 @@ class App {
         'https://payday-website.vercel.app',
         'https://payday-website-git-main.vercel.app',
         'https://payday-website-git-develop.vercel.app',
+        'https://payday-new.vercel.app',
         'https://paydayexpress.ca',
         'https://www.paydayexpress.ca'
       ],
@@ -59,15 +60,6 @@ class App {
     };
 
     this.app.use(cors(corsOptions));
-
-    // Pre-flight middleware
-    this.app.use((req, res, next) => {
-      res.header('Access-Control-Allow-Origin', req.headers.origin);
-      res.header('Access-Control-Allow-Credentials', true);
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-auth-token');
-      next();
-    });
 
     // Body parsing middleware
     this.app.use(express.json({ limit: '10mb' }));
