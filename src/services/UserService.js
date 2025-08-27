@@ -166,8 +166,19 @@ class UserService {
    */
   verifyToken(token) {
     try {
-      return jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      console.log('🔍 UserService - verifyToken called');
+      console.log('Token to verify:', token ? token.substring(0, 20) + '...' : 'null');
+      
+      const secret = process.env.JWT_SECRET || 'your-secret-key';
+      console.log('JWT Secret:', secret ? 'Set' : 'Using fallback');
+      
+      const decoded = jwt.verify(token, secret);
+      console.log('✅ Token verified in UserService');
+      console.log('Decoded payload:', decoded);
+      
+      return decoded;
     } catch (error) {
+      console.error('❌ Token verification failed in UserService:', error.message);
       throw new Error('Invalid token');
     }
   }

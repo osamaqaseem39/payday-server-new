@@ -83,7 +83,29 @@ router.post('/', (req, res) => applicationController.createApplication(req, res)
  *       401:
  *         description: Unauthorized
  */
-router.get('/', auth.requireManager, (req, res) => applicationController.getAllApplications(req, res));
+router.get('/', (req, res, next) => {
+  console.log('🔍 Applications route accessed');
+  console.log('Headers:', req.headers);
+  console.log('Authorization header:', req.headers.authorization ? 'Present' : 'Missing');
+  console.log('User agent:', req.headers['user-agent']);
+  console.log('Origin:', req.headers.origin);
+  
+  // Check if user is authenticated
+  const token = req.headers.authorization?.split(' ')[1] || 
+               req.headers['x-auth-token'] ||
+               req.cookies?.token;
+  
+  if (!token) {
+    console.log('❌ No token provided');
+    return res.status(401).json({
+      success: false,
+      message: 'Access denied. No token provided.'
+    });
+  }
+  
+  console.log('✅ Token found, proceeding to auth middleware');
+  next();
+}, auth.requireManager, (req, res) => applicationController.getAllApplications(req, res));
 
 /**
  * @swagger

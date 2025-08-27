@@ -177,6 +177,28 @@ class App {
       });
     });
 
+    // Test endpoint for authentication
+    this.app.get('/api/test-auth', (req, res) => {
+      const authHeader = req.headers.authorization;
+      res.json({
+        success: true,
+        message: 'Auth test endpoint',
+        hasAuthHeader: !!authHeader,
+        authHeader: authHeader ? authHeader.substring(0, 20) + '...' : null,
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // Simple test endpoint (no auth required)
+    this.app.get('/api/test', (req, res) => {
+      res.json({
+        success: true,
+        message: 'Server is working!',
+        timestamp: new Date().toISOString(),
+        headers: req.headers
+      });
+    });
+
     // Serve index.html for root route
     this.app.get('/', (req, res) => {
       res.sendFile('index.html', { root: path.join(__dirname, 'public') });
