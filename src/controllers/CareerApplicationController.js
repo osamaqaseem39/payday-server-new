@@ -41,6 +41,7 @@ class CareerApplicationController {
       });
     }
   }
+  
 
   /**
    * Get all applications
