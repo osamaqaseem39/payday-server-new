@@ -66,6 +66,7 @@ class CareerApplicationController {
         data: applications
       });
     } catch (error) {
+      console.error('❌ Error in getAllApplications:', error);
       res.status(500).json({
         success: false,
         message: error.message

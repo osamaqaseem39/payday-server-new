@@ -36,6 +36,11 @@ class BaseRepository {
    */
   async findAll(filters = {}, options = {}) {
     try {
+      console.log('🔍 BaseRepository.findAll called');
+      console.log('🔍 Model name:', this.model.modelName);
+      console.log('🔍 Filters:', filters);
+      console.log('🔍 Options:', options);
+      
       const { sort = { createdAt: -1 }, limit, skip, select } = options;
       let query = this.model.find(filters);
 
@@ -44,8 +49,21 @@ class BaseRepository {
       if (limit) query = query.limit(limit);
       if (select) query = query.select(select);
 
-      return await query.exec();
+      console.log('🔍 Final query:', query.toString());
+      
+      const result = await query.exec();
+      
+      console.log('🔍 Query result:', result ? result.length : 'null');
+      if (result && result.length > 0) {
+        console.log('🔍 First document:', {
+          id: result[0]._id,
+          collection: result[0].collection?.name || 'unknown'
+        });
+      }
+      
+      return result;
     } catch (error) {
+      console.error('❌ Error in BaseRepository.findAll:', error);
       throw new Error(`Failed to find ${this.model.modelName}: ${error.message}`);
     }
   }

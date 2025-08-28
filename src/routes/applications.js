@@ -1,6 +1,7 @@
 const express = require('express');
 const CareerApplicationController = require('../controllers/CareerApplicationController');
 const auth = require('../middleware/auth');
+const databaseConfig = require('../config/database');
 
 const router = express.Router();
 const applicationController = new CareerApplicationController();
@@ -50,6 +51,70 @@ router.post('/', (req, res) => applicationController.createApplication(req, res)
 
 /**
  * @swagger
+ * /api/applications/test:
+ *   get:
+ *     summary: Test endpoint to debug database issues
+ *     tags: [Career Applications]
+ *     responses:
+ *       200:
+ *         description: Test results
+ */
+router.get('/test', async (req, res) => {
+  try {
+    console.log('🧪 Test endpoint called');
+    
+    // Check database connection
+    const dbStatus = databaseConfig.getStatus();
+    console.log('🧪 Database status:', dbStatus);
+    
+    // Check collections
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+    console.log('🧪 Available collections:', collections.map(c => c.name));
+    
+    // Check careerapplications collection directly
+    const careerApplicationsCollection = db.collection('careerapplications');
+    const count = await careerApplicationsCollection.countDocuments();
+    console.log('🧪 Direct collection count:', count);
+    
+    // Get all documents directly from collection
+    const allDocs = await careerApplicationsCollection.find({}).toArray();
+    console.log('🧪 Direct collection documents:', allDocs.length);
+    
+    // Test the model
+    const CareerApplication = require('../models/CareerApplication');
+    console.log('🧪 Model name:', CareerApplication.modelName);
+    console.log('🧪 Model collection name:', CareerApplication.collection.name);
+    
+    // Test model query
+    const modelQuery = await CareerApplication.find({});
+    console.log('🧪 Model query result:', modelQuery.length);
+    
+    res.json({
+      success: true,
+      debug: {
+        databaseStatus: dbStatus,
+        collections: collections.map(c => c.name),
+        directCollectionCount: count,
+        directCollectionDocs: allDocs.length,
+        modelName: CareerApplication.modelName,
+        modelCollectionName: CareerApplication.collection.name,
+        modelQueryResult: modelQuery.length
+      }
+    });
+    
+  } catch (error) {
+    console.error('🧪 Test endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
  * /api/applications:
  *   get:
  *     summary: Get all applications (admin/manager only)
@@ -83,29 +148,55 @@ router.post('/', (req, res) => applicationController.createApplication(req, res)
  *       401:
  *         description: Unauthorized
  */
-router.get('/', (req, res, next) => {
-  console.log('🔍 Applications route accessed');
-  console.log('Headers:', req.headers);
-  console.log('Authorization header:', req.headers.authorization ? 'Present' : 'Missing');
-  console.log('User agent:', req.headers['user-agent']);
-  console.log('Origin:', req.headers.origin);
-  
-  // Check if user is authenticated
-  const token = req.headers.authorization?.split(' ')[1] || 
-               req.headers['x-auth-token'] ||
-               req.cookies?.token;
-  
-  if (!token) {
-    console.log('❌ No token provided');
-    return res.status(401).json({
+router.get('/', auth.verifyToken, auth.requireManager, async (req, res, next) => {
+  try {
+    // Check database connection
+    const dbStatus = databaseConfig.getStatus();
+    console.log('🔍 Database status:', dbStatus);
+    
+    if (!dbStatus.isConnected) {
+      console.log('❌ Database not connected, attempting connection...');
+      const connected = await databaseConfig.connect();
+      if (!connected) {
+        return res.status(503).json({
+          success: false,
+          message: 'Database connection not available'
+        });
+      }
+    }
+    
+    // Check if the collection exists and has data
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+    console.log('🔍 Available collections:', collections.map(c => c.name));
+    
+    // Check the careerapplications collection specifically
+    const careerApplicationsCollection = db.collection('careerapplications');
+    const count = await careerApplicationsCollection.countDocuments();
+    console.log('🔍 CareerApplications collection count:', count);
+    
+    // Get a sample document
+    if (count > 0) {
+      const sample = await careerApplicationsCollection.findOne();
+      console.log('🔍 Sample document:', {
+        id: sample._id,
+        firstName: sample.firstName,
+        lastName: sample.lastName,
+        position: sample.position
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('❌ Database check error:', error);
+    return res.status(503).json({
       success: false,
-      message: 'Access denied. No token provided.'
+      message: 'Database check failed',
+      error: error.message
     });
   }
-  
-  console.log('✅ Token found, proceeding to auth middleware');
-  next();
-}, auth.requireManager, (req, res) => applicationController.getAllApplications(req, res));
+}, (req, res) => applicationController.getAllApplications(req, res));
 
 /**
  * @swagger
@@ -128,7 +219,7 @@ router.get('/', (req, res, next) => {
  *       401:
  *         description: Unauthorized
  */
-router.get('/status/:status', auth.requireManager, (req, res) => applicationController.getApplicationsByStatus(req, res));
+router.get('/status/:status', auth.verifyToken, auth.requireManager, (req, res) => applicationController.getApplicationsByStatus(req, res));
 
 /**
  * @swagger
@@ -150,7 +241,7 @@ router.get('/status/:status', auth.requireManager, (req, res) => applicationCont
  *       401:
  *         description: Unauthorized
  */
-router.get('/recent', auth.requireManager, (req, res) => applicationController.getRecentApplications(req, res));
+router.get('/recent', auth.verifyToken, auth.requireManager, (req, res) => applicationController.getRecentApplications(req, res));
 
 /**
  * @swagger
@@ -166,7 +257,7 @@ router.get('/recent', auth.requireManager, (req, res) => applicationController.g
  *       401:
  *         description: Unauthorized
  */
-router.get('/statistics', auth.requireManager, (req, res) => applicationController.getApplicationStatistics(req, res));
+router.get('/statistics', auth.verifyToken, auth.requireManager, (req, res) => applicationController.getApplicationStatistics(req, res));
 
 /**
  * @swagger
@@ -191,7 +282,7 @@ router.get('/statistics', auth.requireManager, (req, res) => applicationControll
  *       401:
  *         description: Unauthorized
  */
-router.get('/search', auth.requireManager, (req, res) => applicationController.searchApplications(req, res));
+router.get('/search', auth.verifyToken, auth.requireManager, (req, res) => applicationController.searchApplications(req, res));
 
 /**
  * @swagger
@@ -216,7 +307,7 @@ router.get('/search', auth.requireManager, (req, res) => applicationController.s
  *       401:
  *         description: Unauthorized
  */
-router.get('/:id', auth.requireManager, (req, res) => applicationController.getApplicationById(req, res));
+router.get('/:id', auth.verifyToken, auth.requireManager, (req, res) => applicationController.getApplicationById(req, res));
 
 /**
  * @swagger
@@ -255,7 +346,7 @@ router.get('/:id', auth.requireManager, (req, res) => applicationController.getA
  *       401:
  *         description: Unauthorized
  */
-router.put('/:id/status', auth.requireManager, (req, res) => applicationController.updateApplicationStatus(req, res));
+router.put('/:id/status', auth.verifyToken, auth.requireManager, (req, res) => applicationController.updateApplicationStatus(req, res));
 
 /**
  * @swagger
@@ -282,7 +373,7 @@ router.put('/:id/status', auth.requireManager, (req, res) => applicationControll
  *       403:
  *         description: Admin privileges required
  */
-router.delete('/:id', auth.requireAdmin, (req, res) => applicationController.deleteApplication(req, res));
+router.delete('/:id', auth.verifyToken, auth.requireAdmin, (req, res) => applicationController.deleteApplication(req, res));
 
 /**
  * @swagger

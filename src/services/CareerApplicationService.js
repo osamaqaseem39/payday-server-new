@@ -53,8 +53,15 @@ class CareerApplicationService {
    */
   async getAllApplications(filters = {}, options = {}) {
     try {
-      return await this.applicationRepository.findAll(filters, options);
+      console.log('🔍 CareerApplicationService: Getting applications with filters:', filters);
+      
+      const result = await this.applicationRepository.findAll(filters, options);
+      
+      console.log('🔍 CareerApplicationService: Found', result ? result.length : 0, 'applications');
+      
+      return result;
     } catch (error) {
+      console.error('❌ Error in CareerApplicationService.getAllApplications:', error);
       throw new Error(`Failed to get applications: ${error.message}`);
     }
   }

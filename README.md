@@ -148,7 +148,7 @@ The API is pre-configured for:
 
 ### Health Check
 ```bash
-curl https://your-vercel-domain.vercel.app/
+curl http://localhost:3002/
 ```
 
 Expected Response:

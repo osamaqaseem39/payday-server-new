@@ -32,6 +32,7 @@ class App {
       origin: [
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://localhost:3002',
         'https://payday-website.vercel.app',
         'https://payday-website-git-main.vercel.app',
         'https://payday-website-git-develop.vercel.app',
@@ -129,7 +130,7 @@ class App {
         servers: [
           {
             url: process.env.NODE_ENV === 'production' 
-              ? 'https://your-vercel-domain.vercel.app' 
+              ? 'http://localhost:3002' 
               : `http://localhost:${this.port}`,
             description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server',
           },

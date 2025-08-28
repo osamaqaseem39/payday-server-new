@@ -53,9 +53,9 @@ To deploy this server successfully on Vercel, you need to set up the following e
 
 After setting up environment variables:
 
-1. **Check the dashboard**: Visit `https://your-vercel-domain.vercel.app/`
-2. **Check health endpoint**: Visit `https://your-vercel-domain.vercel.app/api/health`
-3. **Check API docs**: Visit `https://your-vercel-domain.vercel.app/api-docs`
+1. **Check the dashboard**: Visit `http://localhost:3002/`
+2. **Check health endpoint**: Visit `http://localhost:3002/api/health`
+3. **Check API docs**: Visit `http://localhost:3002/api-docs`
 
 ## Troubleshooting
 
