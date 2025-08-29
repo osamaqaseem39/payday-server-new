@@ -1,5 +1,6 @@
 const CareerApplicationRepository = require('../repositories/CareerApplicationRepository');
 const EmailService = require('./EmailService');
+const InterviewCandidateService = require('./InterviewCandidateService');
 
 /**
  * Career Application Service Class
@@ -10,6 +11,7 @@ class CareerApplicationService {
   constructor() {
     this.applicationRepository = new CareerApplicationRepository();
     this.emailService = new EmailService();
+    this.interviewCandidateService = new InterviewCandidateService();
   }
 
   /**
@@ -18,6 +20,15 @@ class CareerApplicationService {
   async createApplication(applicationData) {
     try {
       const application = await this.applicationRepository.create(applicationData);
+      
+      // Automatically create interview candidate (non-blocking)
+      this.interviewCandidateService.createFromApplication(application._id, 'system')
+        .then(candidate => {
+          console.log('✅ Interview candidate created automatically for application:', application._id);
+        })
+        .catch(error => {
+          console.error('⚠️ Failed to create interview candidate automatically:', error.message);
+        });
       
       // Send confirmation email to applicant (non-blocking)
       this.emailService.sendApplicationConfirmation(application)

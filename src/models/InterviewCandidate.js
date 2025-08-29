@@ -237,7 +237,13 @@ interviewCandidateSchema.pre('save', function(next) {
 
 // Static method to find candidates by stage
 interviewCandidateSchema.statics.findByStage = function(stage) {
-  return this.find({ currentStage: stage }).populate('careerApplication');
+  return this.find({ currentStage: stage }).populate({
+    path: 'careerApplication',
+    populate: {
+      path: 'resume',
+      select: 'filename path'
+    }
+  });
 };
 
 // Static method to find candidates needing follow-up
@@ -248,7 +254,13 @@ interviewCandidateSchema.statics.findNeedingFollowUp = function() {
   return this.find({
     currentStage: { $nin: ['rejected', 'hired'] },
     updatedAt: { $lt: threeDaysAgo }
-  }).populate('careerApplication');
+  }).populate({
+    path: 'careerApplication',
+    populate: {
+      path: 'resume',
+      select: 'filename path'
+    }
+  });
 };
 
 // Instance method to schedule interview

@@ -24,7 +24,9 @@ class InterviewCandidateService {
     // Check if candidate already exists
     const existingCandidate = await this.interviewCandidateRepository.findByCareerApplication(careerApplicationId);
     if (existingCandidate) {
-      throw new Error('Interview candidate already exists for this application');
+      // If candidate already exists, return it instead of throwing error
+      console.log('ℹ️ Interview candidate already exists for application:', careerApplicationId);
+      return existingCandidate;
     }
 
     // Create interview candidate
@@ -33,16 +35,17 @@ class InterviewCandidateService {
       currentStage: 'screening',
       timeline: [{
         action: 'Candidate created from application',
-        performedBy: userId,
-        details: 'Moved to interview process'
+        performedBy: userId || 'system',
+        details: 'Automatically moved to interview process'
       }]
     };
 
     const candidate = await this.interviewCandidateRepository.create(candidateData);
     
-    // Update career application status
-    await this.careerApplicationRepository.update(careerApplicationId, { status: 'shortlisted' });
-
+    // Note: We don't automatically change application status to 'shortlisted' anymore
+    // since candidates are created for all applications now
+    
+    console.log('✅ Interview candidate created for application:', careerApplicationId);
     return candidate;
   }
 

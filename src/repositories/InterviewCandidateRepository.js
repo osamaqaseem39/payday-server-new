@@ -11,6 +11,97 @@ class InterviewCandidateRepository extends BaseRepository {
   }
 
   /**
+   * Override findAll to include career application population
+   */
+  async findAll(filters = {}, options = {}) {
+    try {
+      const { sort = { createdAt: -1 }, limit, skip, select } = options;
+      let query = this.model.find(filters)
+        .populate({
+          path: 'careerApplication',
+          populate: {
+            path: 'resume',
+            select: 'filename path'
+          }
+        });
+
+      if (sort) query = query.sort(sort);
+      if (skip) query = query.skip(skip);
+      if (limit) query = query.limit(limit);
+      if (select) query = query.select(select);
+
+      return await query.exec();
+    } catch (error) {
+      throw new Error(`Failed to find interview candidates: ${error.message}`);
+    }
+  }
+  
+
+  /**
+   * Override findById to include career application population
+   */
+  async findById(id) {
+    try {
+      return await this.model.findById(id)
+        .populate({
+          path: 'careerApplication',
+          populate: {
+            path: 'resume',
+            select: 'filename path'
+          }
+        })
+        .populate('interviews.interviewers', 'name email')
+        .populate('decision.madeBy', 'name email')
+        .populate('communications.initiatedBy', 'name email');
+    } catch (error) {
+      throw new Error(`Failed to find interview candidate by ID: ${error.message}`);
+    }
+  }
+
+  /**
+   * Override findOne to include career application population
+   */
+  async findOne(filters = {}) {
+    try {
+      return await this.model.findOne(filters)
+        .populate({
+          path: 'careerApplication',
+          populate: {
+            path: 'resume',
+            select: 'filename path'
+          }
+        })
+        .populate('interviews.interviewers', 'name email')
+        .populate('decision.madeBy', 'name email')
+        .populate('communications.initiatedBy', 'name email');
+    } catch (error) {
+      throw new Error(`Failed to find interview candidate: ${error.message}`);
+    }
+  }
+
+  /**
+   * Override updateById to include career application population after update
+   */
+  async updateById(id, data) {
+    try {
+      const updated = await this.model.findByIdAndUpdate(
+        id,
+        data,
+        { new: true, runValidators: true }
+      );
+      
+      if (updated) {
+        // Populate the updated document
+        return await this.findById(id);
+      }
+      
+      return updated;
+    } catch (error) {
+      throw new Error(`Failed to update interview candidate: ${error.message}`);
+    }
+  }
+
+  /**
    * Find candidates by stage
    */
   async findByStage(stage) {
@@ -195,7 +286,7 @@ class InterviewCandidateRepository extends BaseRepository {
    * Schedule interview for candidate
    */
   async scheduleInterview(candidateId, interviewData) {
-    const candidate = await this.model.findById(candidateId);
+    const candidate = await this.findById(candidateId);
     if (!candidate) {
       throw new Error('Candidate not found');
     }
@@ -207,7 +298,7 @@ class InterviewCandidateRepository extends BaseRepository {
    * Update candidate stage
    */
   async updateStage(candidateId, newStage, performedBy) {
-    const candidate = await this.model.findById(candidateId);
+    const candidate = await this.findById(candidateId);
     if (!candidate) {
       throw new Error('Candidate not found');
     }
@@ -219,7 +310,7 @@ class InterviewCandidateRepository extends BaseRepository {
    * Make decision for candidate
    */
   async makeDecision(candidateId, decision, performedBy, notes = '') {
-    const candidate = await this.model.findById(candidateId);
+    const candidate = await this.findById(candidateId);
     if (!candidate) {
       throw new Error('Candidate not found');
     }
